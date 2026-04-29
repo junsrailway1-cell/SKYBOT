@@ -4,3 +4,4 @@ aiohttp==3.9.1
 requests==2.31.0
 psycopg2-binary
 matplotlib==3.10.9
+psutil
