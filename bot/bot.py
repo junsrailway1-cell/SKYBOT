@@ -1083,8 +1083,105 @@ def save_verification_log(discord_nick: str, roblox_nick: str):
     except Exception as e:
         print(f"로그 저장 실패: {e}")
         
-from discord.ext import commands
-import discord
+@bot.tree.command(name="공지전송", description="고정 공지를 채널에 전송")
+async def notice_send(interaction: discord.Interaction):
+    if not is_admin(interaction.user):
+        await interaction.response.send_message("권한이 없습니다.", ephemeral=True)
+        return
+
+    await interaction.response.defer(ephemeral=True)
+
+    msg1 = """# [ 디스코드 닉네임 양식 ]
+
+[계급] (보직) 로블록스 닉네임
+
+가입 한 보직이 없을 경우 보직란은 작성하지 않습니다.
+
+보직별 보직란에 적어야 할 영어는 다음과 같습니다.
+
+<@&1497820313180704880> : HQ
+<@&1497826757250908241> : SWC
+<@&1497828663888973915> : 13th SMB
+<@&1497828665692524606> : 9th SFB
+
+만약 로블록스 닉네임이 너무 길어서 작성이 되지 않을 시, <@1206574701380636692> 에게 도움을 요청하세요."""
+    
+    msg2 = """## 진급 방법
+시험 범위
+소위부터 대위는 훈련병부터 원사 시험까지 가능
+소령부터는 준위 시험까지 가능
+
+훈련병: 훈련병 시험 통과 및 보직 계급 배치
+이등병: 이등병 시험 통과 및 보직 계급 배치
+일등병: 일등병 시험 통과 및 보직 계급 배치
+상등병: 상등병 시험 통과 및 보직 계급 배치
+분대장: 분대장 시험 통과 및 보직 계급 배치
+병장: 병장 시험 통과
+하사: 하사 시험 통과
+중사: 중사 시험 통과
+상사: 상사 시험 통과
+원사: 원사 시험 통과
+준위: 준위 시험 통과
+
+소위: 병사진급제 (육군본부에서 시행)
+중위: 병사진급제 (육군본부에서 시행)
+대위: 병사진급제 (육군본부에서 시행)
+소령: 병사진급제 (육군본부에서 시행)
+중령: 병사진급제 (육군본부에서 시행)
+대령: 병사진급제 (육군본부에서 시행)
+
+준장: 군 수뇌부 회의 결과로 특진
+소장: 군 수뇌부 회의 결과로 특진
+중장: 군 수뇌부 회의 결과로 특진
+
+대장: 육군주임원사 선거 당선
+
+육군주임원사: 육군참모차장 선거 당선
+육군참모차장: 육군참모총장 선거 당선
+육군참모총장: 군 수뇌부 회의 결과로 특진
+합동참모의장: 군 수뇌부 회의 결과로 특진
+국방부장관: 군 수뇌부 회의 결과로 특진
+
+국무총리: 국군통수권자의 통수권 이양
+
+선거 방식
+소장부터 육군주임원사 선거 지원 가능
+중장부터 육군참모차장 선거 지원 가능
+대장부터 육군참모총장 선거 지원 가능
+
+선거 지원자 중 후보자 선별 (최대 3명)"""
+
+    msg3 = """**모든 행정의 중심, 스카이부대 직속예하 최상위 지휘본부**
+# '육군본부'
+https://discord.gg/nryVxmUXn3
+
+@everyone"""
+
+    data = [
+        (1461636785250504760, msg1),
+        (1472449849575211097, msg2),
+        (1497955213787795667, msg3),
+    ]
+
+    success = 0
+    failed = []
+
+    for channel_id, text in data:
+        try:
+            channel = interaction.guild.get_channel(channel_id)
+            if channel is None:
+                channel = await interaction.guild.fetch_channel(channel_id)
+
+            await channel.send(text)
+            success += 1
+        except Exception as e:
+            failed.append(f"{channel_id}: {e}")
+
+    result = f"완료됨. 성공 {success}개"
+    if failed:
+        result += "\\n실패:\\n" + "\\n".join(failed[:10])
+
+    await interaction.followup.send(result, ephemeral=True)
 
 @bot.command(name="폴더")
 @commands.has_permissions(ban_members=True)
